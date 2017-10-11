@@ -81,8 +81,12 @@ if (argc != 2)
 	SDL_Surface* image_copy = load_image(argv[1]);	
 	forall_greyconvert(image);
 	SDL_Surface* screen = display_image(image);
-	sobel_filter(image, image_copy);	
+	sobel_filter(image, image_copy, 1, 0);	
 	screen = display_image(image_copy);	
+	sobel_filter(image, image_copy, 0, 1);
+	screen = display_image(image_copy);
+	sobel_filter(image, image_copy, 1, 1);
+	screen = display_image(image_copy);
 	SDL_FreeSurface(screen);
 	return 0;
   }

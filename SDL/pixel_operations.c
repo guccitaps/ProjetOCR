@@ -5,12 +5,14 @@
 // (http://www.libsdl.org/release/SDL-1.2.15/docs/html/guidevideo.html)
  
 # include "pixel_operations.h"
+# include <math.h>
  
 static inline
 Uint8* pixelref(SDL_Surface *surf, unsigned x, unsigned y) {
   int bpp = surf->format->BytesPerPixel;
   return (Uint8*)surf->pixels + y * surf->pitch + x * bpp;
 }
+
  
 Uint32 getpixel(SDL_Surface *surface, unsigned x, unsigned y) {
   Uint8 *p = pixelref(surface, x, y);
@@ -88,65 +90,33 @@ void forall_greyconvert(SDL_Surface* screen)
 
 
 
-void sobel_filter(SDL_Surface* screen, SDL_Surface* screen2)  //horizontal filter
+void sobel_filter(SDL_Surface* screen, SDL_Surface* screen2, _Bool x, _Bool y)  //horizontal filter
 {	
-  int weight[3][3] ={   {	-1,	0,	1},
+  int weight_x[3][3] ={ {	-1,	0,	1},
 	      		{	-2,	0,	2},
 			{	-1,	0,	1}};
 
- 
+  int weight_y[3][3] ={ {	-1,	-2,	-1},
+			{  	 0,	 0,	 0},
+			{	 1,	 2,	 1}};
+
   const SDL_PixelFormat* pixel_format = screen->format;
   Uint8 r;
   Uint8 g;
   Uint8 b;
 
-  double pixel_red_value = 0;
+  double pixel_red_value_x = 0;
+  double pixel_red_value_y = 0;
   Uint32 current_pixel_value = 0;  
-
-//calculating min and max  
-
-  //double max = 255;
-  //double min = 0;
 
   unsigned w = screen->w;
   unsigned h = screen->h;
-
-/*
   for(unsigned i = 0; i < w; i++)
   {
 	for(unsigned j = 0; j < h; j++)
 	{
-		pixel_red_value = 0;
-		for (unsigned x = -1; x < 2; x++)
-		{
-			for(unsigned y = -1; y < 2; y++)
-			{
-				current_pixel_value = getpixel(screen, i, j);
-				SDL_GetRGB(current_pixel_value, pixel_format, &r, &g, &b);
-				pixel_red_value += weight[x + 1][y + 1] * r;
-			}
-		}
-		if (pixel_red_value < min)
-		{
-			min = pixel_red_value;
-		}
-		if (pixel_red_value > max)
-		{
-			max = pixel_red_value;
-		}
-	}
-  }
-*/
- //regenerating screen2
-
- // w = screen2->w;
- // h = screen2->h;
-
-  for(unsigned i = 0; i < w; i++)
-  {
-	for(unsigned j = 0; j < h; j++)
-	{
-		pixel_red_value = 0;
+		pixel_red_value_x = 0;
+		pixel_red_value_y = 0;
 		for (int x = -1; x < 2; x++)
 		{
 			for(int y = -1; y < 2; y++)
@@ -155,24 +125,36 @@ void sobel_filter(SDL_Surface* screen, SDL_Surface* screen2)  //horizontal filte
 				{
 					current_pixel_value = getpixel(screen, i+x, j+y);
 					SDL_GetRGB(current_pixel_value, pixel_format, &r, &g, &b);
-					pixel_red_value += weight[x + 1][y + 1] * r/*current_pixel_value*/;
+					pixel_red_value_x += weight_x[x + 1][y + 1] * r;
+					pixel_red_value_y += weight_y[x + 1][y + 1] * r;
 				}
 			}
 		}
 	//	printf("%f", pixel_red_value);
 		Uint8 formated_red_value = 0;
-		if (pixel_red_value > 255)
+		if (pixel_red_value_x > 255)
 		{
-			formated_red_value = 255;
+			pixel_red_value_x = 255;
 		}
-		else if (pixel_red_value < 0)
+		else if (pixel_red_value_x < 0)
 		{
-			formated_red_value = 0;
+			pixel_red_value_x = 0;
 		}
-		else
+		
+		if (pixel_red_value_y > 255)
 		{
-			formated_red_value = pixel_red_value;
+			pixel_red_value_y = 255;
 		}
+		else if (pixel_red_value_y < 0)
+		{
+			pixel_red_value_y = 0;
+		}
+		if (!x)
+			pixel_red_value_x = 0;
+		if (!y)
+			pixel_red_value_y = 0;
+		formated_red_value = sqrt(pixel_red_value_x * pixel_red_value_x + pixel_red_value_y * pixel_red_value_y);
+//		formated_red_value = pixel_red_value_x;
 		//pixel_red_value = 255 * (pixel_red_value - min) / (max - min);
 		Uint32 pixel = SDL_MapRGB(pixel_format, formated_red_value, formated_red_value, formated_red_value);
 		putpixel(screen2, i, j, pixel);
