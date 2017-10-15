@@ -6,6 +6,7 @@
 #include <SDL/SDL_image.h>
 #include <err.h>
 #include "pixel_operations.h"
+#include "image_section.h"
 
 void wait_for_keypressed(void) {
   SDL_Event             event;
@@ -66,6 +67,17 @@ SDL_Surface* display_image(SDL_Surface *img) {
   return screen;
 }
 
+void print_matrix(char mat[], size_t lines, size_t cols)
+{	
+	for(unsigned i = 0; i < lines; i++)
+	{
+		for(unsigned j = 0; j < cols; j++)
+		{
+			printf("%d    ",mat[j + i * cols]);
+		}
+	  printf("\n");
+	}
+}
 int main(int argc, char *argv[])
 {
   
@@ -78,16 +90,24 @@ if (argc != 2)
   {
 	init_sdl();
 	SDL_Surface* image = load_image(argv[1]); 
-	SDL_Surface* image_copy = load_image(argv[1]);	
-	forall_greyconvert(image);
+	//SDL_Surface* image_copy = load_image(argv[1]);	
+	forall_func(image, greyconvert);
 	SDL_Surface* screen = display_image(image);
-	sobel_filter(image, image_copy, 1, 0);	
+	forall_func(image, black_or_white);
+	screen = display_image(image);
+/*	sobel_filter(image, image_copy, 1, 0);	
 	screen = display_image(image_copy);	
 	sobel_filter(image, image_copy, 0, 1);
 	screen = display_image(image_copy);
 	sobel_filter(image, image_copy, 1, 1);
-	screen = display_image(image_copy);
+	screen = display_image(image_copy);*/	
+	char mat[64];
+	bloc_detection(screen, mat);	
 	SDL_FreeSurface(screen);
+	print_matrix(mat, 8, 8);
+
+
+
 	return 0;
   }
 }

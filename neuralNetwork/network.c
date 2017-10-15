@@ -2,17 +2,13 @@
 #include <stdlib.h>
 
 #include "network.h"
-_Bool same(_Bool a, _Bool b)
- { 
-	return a == b;
- }
 
-_Bool activation(int[] neurons, int[] weights, int size)
+int activation(int[] neurons, int[] weights, int size)
  {	
 	int sum = 0;
 	for(unsigned i = 0; i < size; i++)
 	{
-	//	sum += neu
+		sum += neurons[i] * weight;
 	}	
  }
 
@@ -25,7 +21,6 @@ int main(int argc, char* argv[])
 
 	//analyse
 
-	neurons[0] = same();
 	//find answer
 
 	//correction
