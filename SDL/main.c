@@ -101,11 +101,11 @@ if (argc != 2)
 	screen = display_image(image_copy);
 	sobel_filter(image, image_copy, 1, 1);
 	screen = display_image(image_copy);*/	
-	char mat[64];
-	bloc_detection(screen, mat);	
+	char mat[30 * 30];
+	bloc_detection(image, mat, 30);	
+	print_matrix(mat, 30, 30);
+	screen = display_image(image);
 	SDL_FreeSurface(screen);
-	print_matrix(mat, 8, 8);
-
 
 
 	return 0;

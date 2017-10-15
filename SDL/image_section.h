@@ -5,7 +5,7 @@
 # include <stdlib.h>
 # include <SDL.h>
 
-void bloc_detection(SDL_Surface* screen, char screen_matrix[]);
+void bloc_detection(SDL_Surface* screen, char screen_matrix[], char divisor);
 
 
 # endif
