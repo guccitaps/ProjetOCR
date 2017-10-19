@@ -81,13 +81,15 @@ void print_matrix(char mat[], size_t lines, size_t cols)
 int main(int argc, char *argv[])
 {
   
-if (argc != 2)
+if (argc < 2 && argc > 3)
   {  
 	printf("nop");
 	return -1;
   }
   else
   {
+    int arg = atoi(argv[2]);
+    printf("%d",arg);
 	init_sdl();
 	SDL_Surface* image = load_image(argv[1]); 
 	//SDL_Surface* image_copy = load_image(argv[1]);	
@@ -101,10 +103,15 @@ if (argc != 2)
 	screen = display_image(image_copy);
 	sobel_filter(image, image_copy, 1, 1);
 	screen = display_image(image_copy);*/	
-	char mat[30 * 30];
-	bloc_detection(image, mat, 30);	
-	print_matrix(mat, 30, 30);
+	char mat[arg * arg];
+	bloc_detection(image, mat, arg);	
+	print_matrix(mat, arg, arg);
 	screen = display_image(image);
+
+    size_t* begin = NULL;
+    begin = malloc(sizeof (size_t));
+    block_merging(mat, arg, arg, begin);
+    print_matrix(mat, arg, arg);
 	SDL_FreeSurface(screen);
 
 
