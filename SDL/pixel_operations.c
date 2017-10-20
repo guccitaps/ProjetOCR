@@ -58,6 +58,18 @@ void putpixel(SDL_Surface *surface, unsigned x, unsigned y, Uint32 pixel) {
   }
 }
 
+Uint32 black_or_white(Uint32 pixel, SDL_Surface* screen)
+{
+  Uint8 r = 8;
+  
+  SDL_GetRGB(pixel, screen->format, &r, &r, &r);
+
+  r = r > 127 ? 255 : 0;
+
+  return SDL_MapRGB(screen->format, r, r, r);
+}
+
+
 
 Uint32 greyconvert(Uint32 pixel, SDL_Surface* screen)
 {
@@ -71,7 +83,7 @@ Uint32 greyconvert(Uint32 pixel, SDL_Surface* screen)
 }
 
 
-void forall_greyconvert(SDL_Surface* screen)
+void forall_func(SDL_Surface* screen, func_t f)
 {
   unsigned w = 0;
   unsigned h = 0;
@@ -81,7 +93,7 @@ void forall_greyconvert(SDL_Surface* screen)
   {
 	for(unsigned j = 0; j < h; j++)
 	{
-		Uint32 pixel = greyconvert(getpixel(screen, i, j), screen);
+		Uint32 pixel = f(getpixel(screen, i, j), screen);
 		putpixel(screen, i, j, pixel);
 	}
   }

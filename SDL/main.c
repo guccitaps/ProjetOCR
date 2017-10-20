@@ -6,6 +6,7 @@
 #include <SDL/SDL_image.h>
 #include <err.h>
 #include "pixel_operations.h"
+#include "image_section.h"
 
 void wait_for_keypressed(void) {
   SDL_Event             event;
@@ -66,28 +67,54 @@ SDL_Surface* display_image(SDL_Surface *img) {
   return screen;
 }
 
+void print_matrix(char mat[], size_t lines, size_t cols)
+{	
+	for(unsigned i = 0; i < lines; i++)
+	{
+		for(unsigned j = 0; j < cols; j++)
+		{
+			printf("%d    ",mat[j + i * cols]);
+		}
+	  printf("\n");
+	}
+}
 int main(int argc, char *argv[])
 {
   
-if (argc != 2)
+if (argc < 2 && argc > 3)
   {  
 	printf("nop");
 	return -1;
   }
   else
   {
+    int arg = atoi(argv[2]);
+    printf("%d",arg);
 	init_sdl();
 	SDL_Surface* image = load_image(argv[1]); 
-	SDL_Surface* image_copy = load_image(argv[1]);	
-	forall_greyconvert(image);
+	//SDL_Surface* image_copy = load_image(argv[1]);	
+	forall_func(image, greyconvert);
 	SDL_Surface* screen = display_image(image);
-	sobel_filter(image, image_copy, 1, 0);	
+	forall_func(image, black_or_white);
+	screen = display_image(image);
+/*	sobel_filter(image, image_copy, 1, 0);	
 	screen = display_image(image_copy);	
 	sobel_filter(image, image_copy, 0, 1);
 	screen = display_image(image_copy);
 	sobel_filter(image, image_copy, 1, 1);
-	screen = display_image(image_copy);
+	screen = display_image(image_copy);*/	
+	char mat[arg * arg];
+	bloc_detection(image, mat, arg);	
+	print_matrix(mat, arg, arg);
+	screen = display_image(image);
+
+    size_t* begin = NULL;
+    begin = malloc(sizeof (size_t));
+    block_merging(mat, arg, arg, begin);
+    print_matrix(mat, arg, arg);
 	SDL_FreeSurface(screen);
+
+
 	return 0;
   }
 }
