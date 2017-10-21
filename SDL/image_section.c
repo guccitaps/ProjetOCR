@@ -89,43 +89,111 @@ void __block_merging( char screen_matrix[], size_t w, size_t h, size_t i, size_t
     *ymin = j < *ymin ? j : *ymin;
     *ymax = j > *ymax ? j : *ymax;
         
-    screen_matrix[j + i*w] = '2';
+    if(screen_matrix[j + i*w]== 1){screen_matrix[j +i * w] = 2;}
 
-    if ( i > w && screen_matrix[j + (i-1)*w] == '1')
+    if ( j > 0 && screen_matrix[(j-1) +i * w] == 1)
     {   
+        __block_merging( screen_matrix, w, h, i, j-1, xmin, xmax, ymin, ymax);
+    }
+
+    if( j < h-1 && screen_matrix[(j+1)+ i *w] == 1)
+    {
+        __block_merging( screen_matrix, w, h, i, j+1, xmin, xmax, ymin, ymax);
+    }
+    
+    if( i > 0 && screen_matrix[j + (i-1) * w] == 1)
+    {
         __block_merging( screen_matrix, w, h, i-1, j, xmin, xmax, ymin, ymax);
-    }       
+    }
+    
+    if( i < w-1 && screen_matrix[j + (i+1) * w] == 1)
+    {
+        __block_merging( screen_matrix, w, h, i+1, j, xmin, xmax, ymin, ymax);
+    }
+
+           
 } 
 
-size_t  block_merging(char screen_matrix[], size_t w, size_t h, size_t *begin)
+size_t  block_merging(char screen_matrix[], size_t w, size_t h, size_t tab[])
 {
-    int len = 0;
-    size_t* result = begin;
-    size_t* xmin = 0;
-    size_t* xmax = 0;
-    size_t* ymin = 0;
-    size_t* ymax = 0;
+    printf("appel de bloc merging ");
+    size_t len = 0;
+    size_t xmin = 0;
+    size_t xmax = 0;
+    size_t ymin = 0;
+    size_t ymax = 0;
+    
+    size_t mult = 0;
+
 //	char screen_matrix_copy[w * h];
 	for(size_t i = 0; i < w; i++)
 	{
 		for(size_t j = 0; j < h; j++)
 		{
-			if (screen_matrix[j + i * w] == '1')
+			if (screen_matrix[j + i * w] == 1)
             {
-                __block_merging( screen_matrix, w, h, i, j, xmin,xmax,ymin,ymax);
-                *(result+1) = *xmin;
-                *(result+2) = *xmax;
-                *(result+3) = *ymin;
-                *(result+4) = *ymax;
-                result += 4;
+                __block_merging( screen_matrix, w, h, i, j, &xmin,&xmax,&ymin,&ymax);
+
+                tab[mult*4] = xmin;
+                tab[mult*4 +1] = xmax;
+                tab[mult*4 +2] = ymin;
+                tab[mult*4 +3] = ymax;
                 len += 4;
-                free(screen_matrix);
             }			 
 		}
 	}
+    
+    //free(screen_matrix);
 
     return len;
 }
+
+void block_colorizing(SDL_Surface* screen, char screen_matrix[], char divisor)
+{
+    Uint32 pixel = SDL_MapRGB(screen->format, 0, 150,150);
+    size_t w = screen->w;
+    size_t h = screen->h;
+
+    size_t matrix_w = w / divisor;
+    size_t matrix_h = h / divisor;
+
+    for (char i = 0; i < divisor; i++)
+    {
+        for(char j = 0; j < divisor; j++)
+        {
+            unsigned upper_limit_w = i == divisor-1 ? w : (i + 1) * matrix_w; //gestion derniere case : plus grande que les autres.
+            unsigned upper_limit_h = j == divisor-1 ? h : (j + 1) * matrix_h;
+
+            for(unsigned k = i * matrix_w; k < upper_limit_w; k++)
+            {
+                for(unsigned l = j * matrix_h; l < upper_limit_h; l++)
+                {
+        
+
+            if(screen_matrix[j + i * matrix_w] == 2)
+            {
+                //on colorie
+                for(unsigned k = i * matrix_w; k < upper_limit_w; k++)
+                {
+                    for(unsigned l = j * matrix_h; l < upper_limit_h; l++)
+                    {
+                        putpixel(screen, k, l, pixel);
+                        //printf("pixel_put");
+                    }
+                }
+
+
+            }
+            else
+            {
+                screen_matrix[i + j * divisor] = 0;
+            }
+     }
+    }
+  }
+}
+}
+
 
 /*
 int main(int argc, char* argv[])
@@ -139,6 +207,5 @@ int main(int argc, char* argv[])
 	return 0;
 }
 */
-
 
 
