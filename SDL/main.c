@@ -111,7 +111,7 @@ if (argc < 2 && argc > 3)
     size_t tab[arg*arg];
     printf("appel primaire");
     size_t len = block_merging(mat, arg, arg, tab);
-    block_colorizing(image, mat, arg);
+    //block_colorizing(image, arg, tab, len);
     screen = display_image(image);
     print_matrix(mat, arg, arg);
 	SDL_FreeSurface(screen);
