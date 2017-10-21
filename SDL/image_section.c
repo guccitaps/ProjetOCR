@@ -89,24 +89,24 @@ void __block_merging( char screen_matrix[], size_t w, size_t h, size_t i, size_t
     *ymin = j < *ymin ? j : *ymin;
     *ymax = j > *ymax ? j : *ymax;
         
-    if(screen_matrix[j + i*w]== 1){screen_matrix[j +i * w] = 2;}
+    if(screen_matrix[i +j * w]== 1){screen_matrix[i + j * w] = 2;}
 
-    if ( j > 0 && screen_matrix[(j-1) +i * w] == 1)
+    if ( j > 0 && screen_matrix[i +(j-1) * w] == 1)
     {   
         __block_merging( screen_matrix, w, h, i, j-1, xmin, xmax, ymin, ymax);
     }
 
-    if( j < h-1 && screen_matrix[(j+1)+ i *w] == 1)
+    if( j < h-1 && screen_matrix[i +(j+1) *w] == 1)
     {
         __block_merging( screen_matrix, w, h, i, j+1, xmin, xmax, ymin, ymax);
     }
     
-    if( i > 0 && screen_matrix[j + (i-1) * w] == 1)
+    if( i > 0 && screen_matrix[(i-1) + j * w] == 1)
     {
         __block_merging( screen_matrix, w, h, i-1, j, xmin, xmax, ymin, ymax);
     }
     
-    if( i < w-1 && screen_matrix[j + (i+1) * w] == 1)
+    if( i < w-1 && screen_matrix[(i+1) + j* w] == 1)
     {
         __block_merging( screen_matrix, w, h, i+1, j, xmin, xmax, ymin, ymax);
     }
@@ -130,7 +130,7 @@ size_t  block_merging(char screen_matrix[], size_t w, size_t h, size_t tab[])
 	{
 		for(size_t j = 0; j < h; j++)
 		{
-			if (screen_matrix[j + i * w] == 1)
+			if (screen_matrix[i + j * w] == 1)
             {
                 __block_merging( screen_matrix, w, h, i, j, &xmin,&xmax,&ymin,&ymax);
 
@@ -139,6 +139,10 @@ size_t  block_merging(char screen_matrix[], size_t w, size_t h, size_t tab[])
                 tab[mult*4 +2] = ymin;
                 tab[mult*4 +3] = ymax;
                 len += 4;
+                xmin = 0;
+                xmax = 0;
+                ymin = 0;
+                ymax = 0;
             }			 
 		}
 	}
@@ -170,7 +174,7 @@ void block_colorizing(SDL_Surface* screen, char screen_matrix[], char divisor)
                 {
         
 
-            if(screen_matrix[j + i * matrix_w] == 2)
+            if(screen_matrix[i + j* matrix_w] == 2)
             {
                 //on colorie
                 for(unsigned k = i * matrix_w; k < upper_limit_w; k++)
@@ -183,10 +187,6 @@ void block_colorizing(SDL_Surface* screen, char screen_matrix[], char divisor)
                 }
 
 
-            }
-            else
-            {
-                screen_matrix[i + j * divisor] = 0;
             }
      }
     }
