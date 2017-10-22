@@ -110,12 +110,13 @@ if (argc < 2 && argc > 3)
 	screen = display_image(image);
     size_t tab[arg*arg];
     printf("appel primaire");
+
     size_t len = block_merging(mat, arg, arg, tab);
-    //block_colorizing(image, arg, tab, len);
+    block_colorizing(image, arg, tab, len);
     screen = display_image(image);
     print_matrix(mat, arg, arg);
 	SDL_FreeSurface(screen);
-    for( size_t i = 0; i < len; i++)
+    for( unsigned i = 0; i < len; i++)
     {
         printf("%zu \n ",tab[i]);
     }
