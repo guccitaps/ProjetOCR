@@ -8,7 +8,7 @@
 
 void bloc_detection(SDL_Surface* screen, char screen_matrix[], char divisor);
 
-size_t block_merging( char matrix[], size_t w, size_t h, size_t* begin);
+size_t block_merging( char matrix[], size_t w, size_t h, size_t tab[]);
 
-
+void block_colorizing(SDL_Surface* screen, size_t divisor, size_t tab[], size_t len);
 # endif

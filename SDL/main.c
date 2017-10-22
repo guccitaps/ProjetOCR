@@ -45,7 +45,7 @@ SDL_Surface* load_image(char *path) {
 
 SDL_Surface* display_image(SDL_Surface *img) {
   SDL_Surface          *screen;
-  // Set the window to the same size as the image
+ // Set the window to the same size as the image
   screen = SDL_SetVideoMode(img->w, img->h, 0, SDL_SWSURFACE|SDL_ANYFORMAT);
   if ( screen == NULL ) {
     // error management
@@ -102,19 +102,26 @@ if (argc < 2 && argc > 3)
 	sobel_filter(image, image_copy, 0, 1);
 	screen = display_image(image_copy);
 	sobel_filter(image, image_copy, 1, 1);
-	screen = display_image(image_copy);*/	
+	screen = display_image(image_copy);*/
+	
 	char mat[arg * arg];
 	bloc_detection(image, mat, arg);	
 	print_matrix(mat, arg, arg);
 	screen = display_image(image);
+    size_t tab[arg*arg];
+    printf("appel primaire");
 
-    size_t* begin = NULL;
-    begin = malloc(sizeof (size_t));
-    block_merging(mat, arg, arg, begin);
+    size_t len = block_merging(mat, arg, arg, tab);
+    block_colorizing(image, arg, tab, len);
+    screen = display_image(image);
     print_matrix(mat, arg, arg);
 	SDL_FreeSurface(screen);
-
-
+    for( unsigned i = 0; i < len; i++)
+    {
+        printf("%zu \n ",tab[i]);
+    }
+    
+    printf("len = %zu", len);
 	return 0;
   }
 }
