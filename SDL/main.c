@@ -7,6 +7,7 @@
 #include <err.h>
 #include "pixel_operations.h"
 #include "image_section.h"
+//#include "charcut.h"
 
 void wait_for_keypressed(void) {
   SDL_Event             event;
@@ -113,6 +114,8 @@ if (argc < 2 && argc > 3)
 
     size_t len = block_merging(mat, arg, arg, tab);
     block_colorizing(image, arg, tab, len);
+    size_t charlist[5000];
+    cutimage(charlist, tab, len, image);
     screen = display_image(image);
     print_matrix(mat, arg, arg);
 	SDL_FreeSurface(screen);
