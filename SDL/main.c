@@ -97,6 +97,9 @@ if (argc < 2 && argc > 3)
 	forall_func(image, greyconvert);
 	SDL_Surface* screen = display_image(image);
 	forall_func(image, black_or_white);
+    SDL_Surface* image2 = load_image(argv[1]);
+    forall_func(image2, greyconvert);
+    forall_func(image2, black_or_white);
 	screen = display_image(image);
 /*	sobel_filter(image, image_copy, 1, 0);	
 	screen = display_image(image_copy);	
@@ -109,22 +112,23 @@ if (argc < 2 && argc > 3)
 	bloc_detection(image, mat, arg);	
 	print_matrix(mat, arg, arg);
 	screen = display_image(image);
-    size_t tab[arg*arg];
+    size_t tab[4] = {0, image -> w, 0, image->h};
     printf("appel primaire");
-
-    size_t len = block_merging(mat, arg, arg, tab);
-    block_colorizing(image, arg, tab, len);
-    size_t charlist[5000];
-    cutimage(charlist, tab, len, image);
-    screen = display_image(image);
-    print_matrix(mat, arg, arg);
+    size_t len = 4;
+    //size_t len = block_merging(mat, arg, arg, tab);
+    //block_colorizing(image, arg, tab, len);
+    size_t charlist[50000];
+    size_t lenresult = cutimage(charlist, tab, len, image2);
+    char_colorizing(image2, charlist, lenresult);
+    screen = display_image(image2);
+    //print_matrix(mat, arg, arg);
 	SDL_FreeSurface(screen);
-    for( unsigned i = 0; i < len; i++)
+    for( unsigned i = 0; i < lenresult; i++)
     {
-        printf("%zu \n ",tab[i]);
+        printf("%zu \n ",charlist[i]);
     }
     
-    printf("len = %zu", len);
+    printf("len = %zu", lenresult);
 	return 0;
   }
 }

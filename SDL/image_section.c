@@ -214,7 +214,7 @@ int main(int argc, char* argv[])
 size_t cutlines(size_t lineslist[], size_t bloc[], SDL_Surface* screen)
 {
         //size_t[100][4] lineslist;
-        int previous = 1;
+        int previous = 1; // 1 = ligne blanche, 0 = noire
         int whiteline;
         size_t compteur = 0;
         size_t line[4]; 
@@ -223,7 +223,7 @@ size_t cutlines(size_t lineslist[], size_t bloc[], SDL_Surface* screen)
                 whiteline = 1;
                 for (size_t j = bloc[0]; j < bloc[1]; j++)
                 {
-                        Uint32 pixel = getpixel(screen, i, j);
+                        Uint32 pixel = getpixel(screen, j, i);
                         // restriction : au moindre pixel noir -> caractere -> bloc de texte
                         Uint8 red = 0;
                         SDL_GetRGB(pixel, screen->format, &red, &red, &red);
@@ -273,7 +273,7 @@ size_t cutchar(size_t charlist[], size_t bloc[], SDL_Surface* screen)
                 whiteline = 1;
                 for (size_t i = bloc[2]; i < bloc[3]; i++)
                 {
-                        Uint32 pixel = getpixel(screen, i, j);
+                        Uint32 pixel = getpixel(screen, j, i);
                         // restriction : au moindre pixel noir -> caractere -> bloc de texte
                         Uint8 red = 0;
                         SDL_GetRGB(pixel, screen->format, &red, &red, &red);
@@ -310,26 +310,47 @@ size_t cutchar(size_t charlist[], size_t bloc[], SDL_Surface* screen)
         return compteur;
 }
 
-void cutimage(size_t result[], size_t bloclist[], size_t len, SDL_Surface* screen)
+size_t cutimage(size_t result[], size_t bloclist[], size_t len, SDL_Surface* screen)
 {
         size_t lenresult = 0;
         for(size_t i = 0; i < len; i += 4)
         {
-                size_t lineslist[100];
+                size_t lineslist[1000];
                 size_t bloccoord[4] = {bloclist[i], bloclist[i+1], bloclist[i+2], bloclist[i+3]};
                 size_t lenlines = cutlines(lineslist, bloccoord, screen);
+                printf("appel cutlines \n");
+                printf(" lenlines = %zu \n", lenlines);
                 for(size_t j = 0; j < lenlines; j += 4)
                 {
-                        size_t charlist[150];
+                        size_t charlist[1500];
                         size_t linecoord[4] ={lineslist[j], lineslist[j+1], lineslist[j+2], lineslist[j+3]};
                         size_t charlen = cutchar(charlist, linecoord, screen);
+                        printf("appel cutchar \n");
                         //lenresult += charlen;
-                        size_t o = lenresult;
-                        for(; lenresult <(lenresult + charlen); lenresult++)
+                        for(size_t k = 0; k < charlen; k++)
                         {
-                                result[lenresult] = charlist[lenresult - o];
+                                result[lenresult + k] = charlist[k];
                         }
+                        lenresult += charlen;
                 }
         }
+        return lenresult;
+}       
+
+void char_colorizing(SDL_Surface* screen, size_t tab[], size_t len)
+{
+    Uint32 pixel = SDL_MapRGB(screen->format, 150, 150,150);
+
+    for( size_t n = 0; n < len; n += 4) // Pour chaque bloc de texte
+    {
+        for (size_t i = tab[n]; i <= tab[n+1]; i++) // Pour chaque " case " allant de xmin a xmax
+        {
+            for(size_t j = tab[n+2]; j <= tab[n+3]; j++)
+            {
+                putpixel(screen, i, j, pixel);
+                //printf("pixel_put");  
+            }
+        }
+    }
 }
 
