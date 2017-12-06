@@ -1,8 +1,6 @@
-## Simple SDL mini code
+ CC=gcc
  
-CC=gcc
- 
-CPPFLAGS= `pkg-config --cflags sdl` -MMD
+CPPFLAGS= `pkg-config --cflags sdl --libs gtk+-2.0` -MMD
 CFLAGS= -std=c99 -O3
 LDFLAGS=
 LDLIBS= `pkg-config --libs sdl` -lSDL_image -lm

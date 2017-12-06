@@ -1,9 +1,8 @@
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
+#include <gtk/gtk.h>
 #include <err.h>
 #include "pixel_operations.h"
 #include "image_section.h"

@@ -126,8 +126,14 @@ void __block_merging( char screen_matrix[], size_t w, size_t h, size_t i, size_t
            
 } 
 
-size_t  block_merging(char screen_matrix[], size_t w, size_t h, size_t tab[])
+size_t  block_merging(SDL_Surface* screen, char screen_matrix[], size_t w, size_t h, size_t tab[])
 {
+    size_t wim = screen->w;
+    size_t him = screen->h;
+
+    size_t matrix_w = wim/w;
+    size_t matrix_h = him/h;
+
     //printf("appel de bloc merging ");
     size_t len = 0;
     size_t xmin = 1000; // Je définis ces variables comme des size_t
@@ -147,10 +153,10 @@ size_t  block_merging(char screen_matrix[], size_t w, size_t h, size_t tab[])
                 __block_merging( screen_matrix, w, h, i, j, &xmin,&xmax,&ymin,&ymax); // Je récupère les pointeurs sur les adresses de mes variables avec &
 										      // Ca me permet d'initialiser la valeurs de ces pointeurs
 
-                tab[mult*4] = xmin; // Tab est une matrice à une dimension de taille 100
-                tab[mult*4 +1] = xmax;
-                tab[mult*4 +2] = ymin;
-                tab[mult*4 +3] = ymax;
+                tab[mult*4] = xmin * matrix_w; // Tab est une matrice à une dimension de taille 100
+                tab[mult*4 +1] = xmax == w-1 ? wim : ((xmax+1) * matrix_w);
+                tab[mult*4 +2] = ymin * matrix_h;
+                tab[mult*4 +3] = ymax == h-1 ? him : ((ymax+1) * matrix_h);
 		printf(" xmax = %zu, pointeur = %p, tab =%zu \n", xmax, &xmax, tab[mult*4+1]);
                 len += 4; // Len qui nous permet de connaitre le nombre de bloc détecté
                 xmin = 1000; // Je remets toutes les variables à 0 pour les prochaines comparaisons
@@ -337,11 +343,11 @@ size_t cutimage(size_t result[], size_t bloclist[], size_t len, SDL_Surface* scr
         return lenresult;
 }       
 
-void char_colorizing(SDL_Surface* screen, size_t tab[], size_t len)
+void bloc_colorizing(SDL_Surface* screen, size_t tab[], size_t len)
 {
     Uint32 pixel = SDL_MapRGB(screen->format, 150, 150,150);
 
-    for( size_t n = 0; n < len; n += 4) // Pour chaque bloc de texte
+    for( size_t n = 0; n < len; n += 4) // Pour chaqubloc de texte
     {
         for (size_t i = tab[n]; i <= tab[n+1]; i++) // Pour chaque " case " allant de xmin a xmax
         {
@@ -354,3 +360,19 @@ void char_colorizing(SDL_Surface* screen, size_t tab[], size_t len)
     }
 }
 
+void char_colorizing(SDL_Surface* screen, size_t tab[], size_t len)
+{                       
+    Uint32 pixel = SDL_MapRGB(screen->format, 255, 0,0);
+                
+    for( size_t n = 0; n < len; n += 4) // Pour chaque bloc de texte
+    {   
+        for (size_t i = tab[n]; i <= tab[n+1]; i++) // Pour chaque " case " allant de xmin a xmax
+        {
+            for(size_t j = tab[n+2]; j <= tab[n+3]; j++)
+            {
+                putpixel(screen, i, j, pixel);
+                //printf("pixel_put");  
+            }
+        }
+    }   
+} 
