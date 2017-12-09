@@ -278,7 +278,7 @@ void recover_weights(struct layer* layer)
 		for(size_t i = 0; i < layer->nb_out; i++)
 		{
 			pass = fscanf(open, "%s",buffer);
-//			printf("1 : %s\n", buffer1);
+			printf("recovering : %s\n", buffer);
 			sscanf(buffer, "%lf,%lf,%lf", (layer->out + 3 * i), (layer->out+3 * i + 1), (layer->out + 3 * i + 2));
 		}		
 		if (layer->next)
@@ -346,6 +346,7 @@ char* neural_network_training(char** data, char* str, size_t len)
 	size_t correct_count = 0;
 	recover_weights(input_layer);
 
+	len = 1; //one shot
 	while(count < len)
 	{	
 		print_mat16(*(data + count));
