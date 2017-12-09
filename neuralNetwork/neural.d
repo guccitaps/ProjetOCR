@@ -1,1 +1,0 @@
-neural.o: neural.c
