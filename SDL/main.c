@@ -166,7 +166,7 @@ if (argc < 2 && argc > 3)
 			scanf("%c", &trash);	 
 	}
 */
-	for(size_t i = 0; i < 10; i++)
+	for(size_t i = 0; i < 5; i++)
 	{
 		neural_network_training(matrix, "text_3.txt", lenresult / 4);
     	}

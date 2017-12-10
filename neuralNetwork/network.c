@@ -25,24 +25,18 @@ void print_mat16(char* mat)
 } 
 void print_layer(struct layer* layer)
 {
-/*	printf("#########################\n");
-	printf("########edges############\n");
-	printf("nb_out : %zu\n", layer->nb_out);
-	for(size_t i = 0; i < layer->nb_out; i++)
-	{
-		printf("%lf -> %lf : %lf\n", *(layer->out + 3 * i), *(layer->out + 3 * i + 1), *(layer->out + 3 * i + 2));
-	}
-*/
+/*
 	printf("########values###########\n");
 	for (size_t i = 0; i < layer->size; i++)
 	{
 		printf("%zu : %lf\n", i, *(layer->values + i));
 	}
-/*	printf("########errors##########\n");
+*/
+	printf("########errors##########\n");
 	for(size_t i = 0; i < layer->size; i++)
 	{
 		printf("%zu : %lf\n",i, *(layer->errors + i));
-	}*/
+	}
 /*	if (layer->next)
 	{
 		printf("#########bias###########\n");
@@ -134,11 +128,11 @@ void backpropagation(struct layer* src, double coef, double* expected_values)
 			error = *(src->errors + src_index);
 			node = *(dst->values + dst_index);
 	//		printf("backproped : %lf : %lf\n", error, node);
-			*(dst->out + 3 * i + 2) += (-1 * coef) * error * node; 
+			*(dst->out + 3 * i + 2) += coef * error * node; 
 		}
 		for(size_t i = 0; i < src->size; i++)
 		{
-			*(dst->bias + i) += (-1 * coef) * *(src->errors + i) * *(src->values + i);
+			*(dst->bias + i) += coef * *(src->errors + i) * *(src->values + i);
 		}
 		backpropagation(dst, coef, expected_values);
 	}
@@ -168,13 +162,15 @@ struct layer {
 double* create_edges(struct layer* layer) {	
 	struct layer* next = layer->next;
 	double* edges = calloc(3 * next->size * layer->size, sizeof(double));
+	int pos = 1;
 	for(size_t i = 0; i < layer->size; i++)
 	{
 		for(size_t j = 0; j < next->size; j++)
 		{
+			pos = -pos;
 			*(edges + 3 * next->size * i + 3 * j) = i; //src
 			*(edges + 3 * next->size * i + 3 * j + 1) = j;  //dst
-			*(edges + 3 * next->size * i + 3 * j + 2) = 0.00001 * ((rand() % 4) + 1);  //weight
+			*(edges + 3 * next->size * i + 3 * j + 2) = pos * 0.00001 * ((rand() % 4) + 1);  //weight
 
 		}
 	}
@@ -199,9 +195,11 @@ struct layer* create_layer(size_t size, struct layer* next)
 			layer->nb_out = size * layer->next->size;
 			layer->out = create_edges(layer);
 			double* bias = calloc(next->size, sizeof(double));
+			int pos = 1;
 			for(size_t i = 0; i < next->size; i++)
 			{
-				*(bias + i) = 0.002 * (rand() % 4 + 1);
+				*(bias + i) = 0.02 * (rand() % 4 + 1);
+				pos = -pos;
 			}	
 			layer->bias = bias;
 		}
@@ -311,16 +309,93 @@ void print_string(char* str)
 	}
 }
 
+char* neural_network_analysis(char** data, size_t len)
+{
+
+	char* return_buffer = calloc(len, sizeof(char));
+
+	size_t input_size = 16 * 16;
+	size_t output_size = 54;
+	size_t hidden_size = 128;
+
+	struct layer* output_layer = create_layer(output_size, NULL);
+	struct layer* hidden_layer3 = create_layer(hidden_size, output_layer);
+	struct layer* hidden_layer2 = create_layer(hidden_size, hidden_layer3);
+	struct layer* hidden_layer1 = create_layer(hidden_size,  hidden_layer2);
+	struct layer* input_layer = create_layer(input_size,  hidden_layer1);	
+
+	recover_weights(input_layer);
+
+	char* input = calloc(input_size, sizeof(char));
+	double* expected_values = calloc(output_size, sizeof(double));
+
+	char* letter_matrix;
+
+	
+	for(size_t count = 0; count < len; count++)
+	{	
+		letter_matrix = *(data + count);
+		for(size_t i = 0; i < 16; i++)
+		{
+			for(size_t j = 0; j < 16; j++)
+			{
+				*(input + 16 * i + j) = *(letter_matrix + 16 * i + j);		
+			}
+		}
+
+		activation(input_layer, input);
+		propagation(input_layer);
+
+		size_t max = 0;
+		for(size_t i = 0; i < output_layer->size; i++)
+		{
+			if (*(output_layer->values + i) > *(output_layer->values + max))
+				max = i;
+		}
+
+		for (size_t i = 0; i < output_layer->size; i++)
+		{
+			*(output_layer->values + i) = 0;
+		}
+		for (size_t i = 0; i < hidden_layer1->size; i++)
+		{
+			*(hidden_layer2->values + i) = 0;
+			*(hidden_layer1->values + i) = 0;
+		}//same size -> opti
+
+		if (0 <= max && max < 26) //maj
+		{
+			max += 65;
+		}
+		else if (26 <= max && max < 52)
+		{
+			max += 97;
+		}
+		else if (max == 52)
+		{
+			max = 44;
+		}
+		else
+		{
+			max = 46;
+		}
+
+		*(return_buffer + count) = max;
+			
+	}	
+	return return_buffer;
+	
+}
+
 double neural_network_training(char** data, char* str, size_t len)
  {
 	char* pass = 0;
-	size_t max_iteration = 300000;
 
 	size_t count = 0;	
 	
 	size_t MAXBUFFLEN = 1000000;
 	FILE* file = fopen(str, "r");
-	char* text_from_file = calloc(max_iteration, sizeof(double));
+	char* text_from_file = calloc(len, sizeof(double));
 
 	int x = fread(text_from_file, sizeof(char), MAXBUFFLEN, file);
 	if (!x)
@@ -334,10 +409,12 @@ double neural_network_training(char** data, char* str, size_t len)
 	
 	size_t input_size = 16 * 16;
 	size_t output_size = 54;
+	size_t hidden_size = 16;
 
 	struct layer* output_layer = create_layer(output_size, NULL);
-	struct layer* hidden_layer2 = create_layer(128, output_layer);
-	struct layer* hidden_layer1 = create_layer(128,  hidden_layer2);
+	struct layer* hidden_layer3 = create_layer(hidden_size, output_layer);
+	struct layer* hidden_layer2 = create_layer(hidden_size, hidden_layer3);
+	struct layer* hidden_layer1 = create_layer(hidden_size,  hidden_layer2);
 	struct layer* input_layer = create_layer(input_size,  hidden_layer1);	
 
 	char* input = calloc(input_size, sizeof(char));
@@ -345,12 +422,13 @@ double neural_network_training(char** data, char* str, size_t len)
 
 	int letter_index = -1;
 
-	double learning_rate = 0.1;
+	double learning_rate = 0.01;
 
 	char* letter_matrix;
 
 	size_t correct_count = 0;
 	recover_weights(input_layer);
+//	len = 1;
 	while(count < len)
 	{	
 //		print_mat16(*(data + count));
@@ -403,6 +481,8 @@ double neural_network_training(char** data, char* str, size_t len)
 		propagation(input_layer);
 		backpropagation(output_layer, learning_rate, expected_values);
 
+
+/*
 		printf("%zu : hidden_layer1:\n", count);
 		int x = scanf("%c", pass);
 		print_layer(hidden_layer1);
@@ -413,9 +493,14 @@ double neural_network_training(char** data, char* str, size_t len)
 		x = scanf("%c", pass);
 		printf("%zu : output_layer:\n", count);
 		x = scanf("%c", pass);
+*/
+/*
+		printf("hidden3:\n");
+		print_layer(hidden_layer3);
+		printf("output:\n");
 		print_layer(output_layer);
 		x = scanf("%c", pass);
-
+*/
 		size_t max = 0;
 		for(size_t i = 0; i < output_layer->size; i++)
 		{
@@ -429,6 +514,7 @@ double neural_network_training(char** data, char* str, size_t len)
 		}
 		for (size_t i = 0; i < hidden_layer1->size; i++)
 		{
+			*(hidden_layer3->values + i) = 0;
 			*(hidden_layer2->values + i) = 0;
 			*(hidden_layer1->values + i) = 0;
 		}//same size -> opti
