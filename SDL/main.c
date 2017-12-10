@@ -125,6 +125,7 @@ if (argc < 2 && argc > 3)
 	sobel_filter(image, image_copy, 1, 1);
 	screen = display_image(image_copy);*/
 	
+
 	char mat[arg * arg];
 	bloc_detection(image, mat, arg);	
 	print_matrix(mat, arg, arg);
@@ -132,7 +133,7 @@ if (argc < 2 && argc > 3)
     size_t tab[2000];
     printf("appel primaire");
     size_t len = block_merging(image, mat, arg, arg, tab);
-  //  bloc_colorizing(image, tab, len);
+   // bloc_colorizing(image, tab, len);
     screen = display_image(image);
     size_t charlist[50000];
     size_t lenresult = cutimage(charlist, tab, len, image2);
@@ -142,6 +143,7 @@ if (argc < 2 && argc > 3)
 	//SDL_FreeSurface(screen);
     printf("len = %zu \n", lenresult);
 
+ 	SDL_FreeSurface(screen);
     SDL_Surface* chara;
     SDL_Surface* resize;
 
@@ -154,11 +156,20 @@ if (argc < 2 && argc > 3)
      //   screen = display_image(resize);
       *(matrix + i / 4) = create_list_matrix(resize);
 //	if (i > 0)
-//		print_mat16(*(matrix + i * sizeof(char) * 256)); 
     }
+/*
+	for(size_t i = 0; i < lenresult / 4; i++)
+	{
 
- 	SDL_FreeSurface(screen);
-	neural_network_training(matrix, "text_2.txt", lenresult / 4);
-    return 0;
+		print_mat16(*(matrix + i));
+		if (i % 3 == 0)
+			scanf("%c", &trash);	 
+	}
+*/
+	for(size_t i = 0; i < 10; i++)
+	{
+		neural_network_training(matrix, "text_3.txt", lenresult / 4);
+    	}
+	return 0;
     }
 }
